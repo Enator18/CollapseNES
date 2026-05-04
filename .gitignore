@@ -3,3 +3,5 @@
 *.labels.txt
 *.dbg
 *.o
+.vimrc
+Mesen
