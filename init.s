@@ -75,7 +75,7 @@ initppu:
     STA VRAMBUF
 
     CLI                 ; clear interrups so NMI can be called
-    LDA #%10110000
+    LDA #%10100000
     STA ppu_ctrl
     STA PPUCTRL         ; the left most bit of $2000 sets wheteher NMI is enabled or not
 

@@ -39,4 +39,4 @@ LOWGRAV      = $40  ; the acceleration applied by gravity each frame while holdi
 HIGHGRAV     = $C0  ; the acceleration applied by gravity each frame in subpixels
 FALLSPEED    = $05  ; the terminal velocity when falling in pixels
 SLIDESPEED   = $02  ; the terminal velocity when sliding down a wall in pixels
-MOVESPEED    = $04  ; the max horizontal move speed in pixels
+MOVESPEED    = $02  ; the max horizontal move speed in pixels

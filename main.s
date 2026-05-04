@@ -2,7 +2,7 @@
 .include "romheader.s"
 .include "variables.s"
 
-.segment "PRG"
+.segment "CODE"
 .include "init.s"
 .include "loop.s"
 .include "nmi.s"

@@ -1,0 +1,5 @@
+*.nes
+*.map.txt
+*.labels.txt
+*.dbg
+*.o
