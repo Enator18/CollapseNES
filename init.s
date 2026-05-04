@@ -89,7 +89,7 @@ initgame:
     STA y_pos+1
 
 	LDX #$E0		; start row loop
-	LDA #$01		; set accumluator to 0
+	LDA #$01		; set accumluator to 1
 @floorloop:
 	STA colmap, X
 	INX
