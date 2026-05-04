@@ -30,7 +30,7 @@ bottom  := R1
     ADC R2
     TAX             ; X is now the index of the tile contianing the player's top-left corner
     LDA colmap,X
-    BPL :+          ; if the tile has collision (It's MSB is 1 and thus is considered negative), collide
+    BEQ :+          ; if the tile has collision, collide
     INC collision
     LDA left
     AND #$0f
@@ -57,7 +57,7 @@ bottom  := R1
     ADC R2
     TAX
     LDA colmap,X
-    BPL :+
+    BEQ :+
     INC collision
     LDA right
     AND #$0f
@@ -84,7 +84,7 @@ bottom  := R1
     ADC R2
     TAX
     LDA colmap,X
-    BPL :+
+    BEQ :+
     INC collision
     INC on_ground
     LDA left
@@ -112,7 +112,7 @@ bottom  := R1
     ADC R2
     TAX
     LDA colmap,X
-    BPL :+
+    BEQ :+
     INC collision
     INC on_ground
     LDA right
