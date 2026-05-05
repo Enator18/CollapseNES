@@ -26,18 +26,19 @@ mainloop:              ; the main game tick loop
     LDA x_vel+1
     ADC #$00
     STA x_vel+1
-    BMI gravity
-    CMP #MOVESPEED
+    BMI :+             ; if velocity is negative, no clamp needed
+    CMP #MOVESPEED     ; if the MSB of velocity is less than movespeed, no clamp needed
     BCC gravity
     LDA #$00
     STA x_vel+0
     LDA #MOVESPEED
     STA x_vel+1
+:
     JMP gravity
 @noright:
     LDA controller     ; left button
     AND #BUTTON_LEFT
-    BEQ @applydrag
+    BEQ @nodir
     LDA #$40
     STA player_dir
     SEC                ; decrease the X velocity by an acceleration amount of 0.25
@@ -47,15 +48,15 @@ mainloop:              ; the main game tick loop
     LDA x_vel+1
     SBC #$00
     STA x_vel+1
-    BPL gravity
-    CMP #(MOVESPEED ^ $FF)+2
+    BPL gravity                ; if velocity is positive, no clamp needed
+    CMP #(MOVESPEED ^ $FF)+1   ; if the MSB of velocity is greater than -movespeed, no clamp needed
     BCS gravity
     LDA #$00
     STA x_vel+0
     LDA #(MOVESPEED ^ $FF)+1
     STA x_vel+1
     JMP gravity
-@applydrag:
+@nodir:
     LDA x_vel+0
     ORA x_vel+1
     BEQ gravity
@@ -81,11 +82,12 @@ mainloop:              ; the main game tick loop
     CMP #$FF
     BNE :+
     LDA x_vel+0
-    CMP #MOVEDRAG+1
+    CMP #(MOVEDRAG ^ $FF)+2
     BCC :+
     LDA #$00
     STA x_vel+0
     STA x_vel+1
+    JMP gravity
 :
     CLC
     LDA x_vel+0
@@ -137,7 +139,6 @@ handlejump:
     STA y_vel+1
 releasejump:
     STA jumping
-
 
 applyvelocity:
     CLC                ; apply X velocity

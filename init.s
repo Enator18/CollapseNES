@@ -76,6 +76,7 @@ initvram:
     STA PPUADDR
     LDX #$F1
     STX PPUADDR
+    INX
     LDA #$00
 :
     STA PPUDATA

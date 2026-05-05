@@ -31,7 +31,7 @@ BUTTON_RIGHT  = 1 << 0
 PLAYERWIDTH  = $08
 PLAYERHEIGHT = $10
 
-JUMPVELOCITY = $07  ; the y velocity applied when the player jumps in pixels
+JUMPVELOCITY = $06  ; the y velocity applied when the player jumps in pixels
 MOVEACCEL    = $40  ; the acceleration applied by movement each frame in subpixels
 MOVEDRAG     = $40  ; the deceleration applied by drag each frame in subpixels
 LOWGRAV      = $40  ; the acceleration applied by gravity each frame while holding jump in subpixels
