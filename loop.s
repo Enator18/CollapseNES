@@ -37,7 +37,7 @@ mainloop:              ; the main game tick loop
 @noright:
     LDA controller     ; left button
     AND #BUTTON_LEFT
-    BEQ @noleft
+    BEQ @applydrag
     LDA #$40
     STA player_dir
     SEC                ; decrease the X velocity by an acceleration amount of 0.25
@@ -55,32 +55,50 @@ mainloop:              ; the main game tick loop
     LDA #(MOVESPEED ^ $FF)+1
     STA x_vel+1
     JMP gravity
-@noleft:
-    JSR applydrag
-
-    LDA on_wall         ; If we aren't on a wall, just go to gravity.
-    BEQ gravity         ;
-
-    LDA player_dir      ; If the player is facing right...
-    BEQ wall_left
-    DEC x_vel+1         ; Increment the MSB (Pixel vel) of x_vel by 1
+@applydrag:
+    LDA x_vel+0
+    ORA x_vel+1
+    BEQ gravity
+    LDA x_vel+1
+    BMI @negative
+    BNE :+             ; positive velocity drag
+    LDA x_vel+0
+    CMP #MOVEDRAG
+    BCS :+
+    LDA #$00
+    STA x_vel+0
     JMP gravity
-wall_left:              ; Otherwise (when the player is facing left)...
-    INC x_vel+1         ; Decrement the MSB (Pixel vel) of x_vel by 1
-
+:
+    SEC
+    LDA x_vel+0
+    SBC #MOVEDRAG
+    STA x_vel+0
+    LDA x_vel+1
+    SBC #$00
+    STA x_vel+1
+    JMP gravity
+@negative:             ; negative velocity drag
+    CMP #$FF
+    BNE :+
+    LDA x_vel+0
+    CMP #MOVEDRAG+1
+    BCC :+
+    LDA #$00
+    STA x_vel+0
+    STA x_vel+1
+:
+    CLC
+    LDA x_vel+0
+    ADC #MOVEDRAG
+    STA x_vel+0
+    LDA x_vel+1
+    ADC #$00
+    STA x_vel+1
 
 gravity:
-    LDA #FALLSPEED
-    STA R0
-    LDA on_wall
-    BEQ :+
-    LDA #SLIDESPEED
-    STA R0
-:
-
     LDA y_vel+1
     BMI applygravity
-    CMP R0
+    CMP #FALLSPEED
     BCS terminal_velocity
 applygravity:
     LDA controller
@@ -101,39 +119,23 @@ gravready:
 terminal_velocity:
     LDA #$00
     STA y_vel+0
-    LDA R0
+    LDA #FALLSPEED
     STA y_vel+1
 
 handlejump:
     LDA on_ground
-    ORA on_wall
     BEQ applyvelocity
     LDA controller
     AND #BUTTON_A
     BEQ releasejump
     LDA jumping
     BNE applyvelocity
+    STA y_vel+0
     LDA #$01
     STA jumping
-    LDA #$00
-    STA y_vel+0
     LDA #(JUMPVELOCITY ^ $FF)+1
     STA y_vel+1
-    LDA on_wall
-    BEQ applyvelocity
-    LDA #$00
-    STA x_vel+0
-    LDA player_dir
-    BEQ @left
-    LDA #WALLJUMPVEL
-    STA x_vel+1
-    JMP applyvelocity
-@left:
-    LDA #(WALLJUMPVEL ^ $FF)+1
-    STA x_vel+1
-    JMP applyvelocity
 releasejump:
-    LDA #$00
     STA jumping
 
 
@@ -145,16 +147,11 @@ applyvelocity:
     LDA x_pos+1
     ADC x_vel+1
     STA x_pos+1
-
-    LDA #$00
-    STA on_wall
     
 player_collision:
     JSR bg_collision   ; X collision
     LDA collision
-    BEQ @no_x_col
-    LDA #$01
-    STA on_wall
+    BEQ apply_y_vel
     LDA #$00
     STA x_vel+1
     STA x_vel+0
@@ -167,20 +164,6 @@ player_collision:
     SEC
     SBC x_eject
     STA x_pos+1
-    JMP apply_y_vel
-@no_x_col:
-    LDA on_wall
-    BEQ apply_y_vel
-    SEC
-    LDA x_pos+0
-    SBC x_vel+0
-    STA x_pos+0
-    LDA x_pos+1
-    SBC x_vel+1
-    STA x_pos+1
-    LDA #$00
-    STA x_vel+1
-    STA x_vel+0
 apply_y_vel:
     CLC                ; apply Y velocity
     LDA y_pos+0

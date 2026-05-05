@@ -32,7 +32,6 @@
     collision:     .res 1     ; Whether a collision has occured
     on_ground:     .res 1     ; Whether the player is on the ground
     jumping:       .res 1     ; Whether the jump button was held last frame
-    on_wall:       .res 1     ; Whether the player is sliding down a wall
     p_anim_frame:  .res 1     ; The current frame of the player's animation
 
 

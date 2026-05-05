@@ -31,12 +31,10 @@ BUTTON_RIGHT  = 1 << 0
 PLAYERWIDTH  = $08
 PLAYERHEIGHT = $10
 
-WALLJUMPVEL  = $03  ; the x velocity applied when the player wall jumps in pixels
 JUMPVELOCITY = $07  ; the y velocity applied when the player jumps in pixels
 MOVEACCEL    = $40  ; the acceleration applied by movement each frame in subpixels
 MOVEDRAG     = $40  ; the deceleration applied by drag each frame in subpixels
 LOWGRAV      = $40  ; the acceleration applied by gravity each frame while holding jump in subpixels
 HIGHGRAV     = $C0  ; the acceleration applied by gravity each frame in subpixels
 FALLSPEED    = $05  ; the terminal velocity when falling in pixels
-SLIDESPEED   = $02  ; the terminal velocity when sliding down a wall in pixels
 MOVESPEED    = $02  ; the max horizontal move speed in pixels
