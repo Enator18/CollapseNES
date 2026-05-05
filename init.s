@@ -36,19 +36,50 @@ clearmem:
     BIT PPUSTATUS
     BPL @vblankwait2
 
-clearvram:
+initvram:
     LDA #$20
     STA PPUADDR
     LDA #$00
     STA PPUADDR
-    LDX #$00
-    LDY #$00
+    LDX #$BC
+    LDY #$04
 :
     STA PPUDATA
     INX
     BNE :-
-    INY
-    CPY #$08
+    DEY
+    BNE :-
+@drawfloor:
+    LDA #$02
+    LDX #$0C
+    LDY #$04
+    STY R0
+@drawfloorloop:
+    STA PPUDATA
+    STY PPUDATA
+    DEX
+    BNE @drawfloorloop
+    LDY #$08
+:
+    STX PPUDATA
+    DEY
+    BNE :-
+    EOR #$07
+    TAY
+    EOR #$06
+    LDX #$0C
+    DEC R0
+    BNE @drawfloorloop
+
+@floorattr:
+    LDA #$23
+    STA PPUADDR
+    LDX #$F1
+    STX PPUADDR
+    LDA #$00
+:
+    STA PPUDATA
+    INX
     BNE :-
 
 loadpalette:
@@ -85,7 +116,7 @@ initppu:
 initgame:
     LDA #$7C        ; init player position
     STA x_pos+1
-    LDA #$D0
+    LDA #$C0
     STA y_pos+1
 
     LDX #$00
@@ -99,7 +130,7 @@ initgame:
     CLC
     ADC #$10
     TAX
-    CPX #$E0
+    CPX #$D0
     BNE @wallloop
 
     LDA #$01
