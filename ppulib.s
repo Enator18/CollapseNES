@@ -1,7 +1,8 @@
 nmiwait:
-    LDA frame_counter
+    LDX frame_counter
+    JSR update_prng
 :
-    CMP frame_counter
+    CPX frame_counter
     BEQ :-
     RTS
 

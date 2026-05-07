@@ -21,6 +21,7 @@
     scroll:        .res 1     ; Y pixel position of screen scroll
     oam_index:     .res 1     ; Current index of the OAM buffer
     controller:    .res 1     ; Controller input
+    prng:          .res 2     ; The prng seed/value
     player_dir:    .res 1     ; Facing direction of the player (0: right, 1: left)
     x_pos:         .res 2     ; X position of the player (LSB: subpixel position, MSB: pixel position)
     y_pos:         .res 2     ; Y position of the player (LSB: subpixel position, MSB: pixel position)
@@ -33,6 +34,11 @@
     on_ground:     .res 1     ; Whether the player is on the ground
     jumping:       .res 1     ; Whether the jump button was held last frame
     p_anim_frame:  .res 1     ; The current frame of the player's animation
+    spawn_timer:   .res 1     ; The number of frames until the next block spawns
+    next_col:      .res 1     ; The next column to spawn a block
+    block_col:     .res 3     ; The column of the falling blocks
+    block_x_pos:   .res 3     ; The x coordinate of the falling blocks
+    block_y_pos:   .res 3     ; The y coordinate of the falling blocks
 
 
 .segment "RAM"                ; The rest of internal RAM after ZP, the OAM buffer, and the VRAM buffer

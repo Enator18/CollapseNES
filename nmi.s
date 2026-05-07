@@ -1,4 +1,5 @@
 NMI:
+    PHP
     PHA
     TXA
     PHA
@@ -58,4 +59,5 @@ setscroll:
     PLA
     TAX
     PLA
+    PLP
     RTI

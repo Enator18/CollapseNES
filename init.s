@@ -140,3 +140,12 @@ initgame:
 	INX
 	CPX #$F0
 	BNE @floorloop
+    
+@initspawn:
+    LDA #$18
+    STA spawn_timer
+    LDA #$FF
+    STA next_col
+    STA block_col+0
+    STA block_col+1
+    STA block_col+2

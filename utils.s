@@ -128,4 +128,18 @@ bottom  := R1
 :
     RTS
 .endproc
+
+update_prng:
+    LDA prng+1
+    LSR A
+    LDA prng+0
+    ROR A
+    EOR prng+1
+    STA prng+1
+    ROR A
+    EOR prng+0
+    STA prng+0
+    EOR prng+1
+    STA prng+1
+    RTS
     

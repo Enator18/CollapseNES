@@ -12,8 +12,28 @@ mainloop:              ; the main game tick loop
     ROL controller     ; move the button value from the carry flag to bit 0 of the controller variable, shifting the other buttons as a result
     BCC :-             ; the carry flag will be 1 if the controller variable has been shifted left 8 times, indicating that all 8 buttons have been read
 
+updatespawn:
+    DEC spawn_timer
+    BNE @nospawn
+@getcol:
+    LDA #$18
+    STA spawn_timer
+    LDA prng+1
+    LSR A
+    TAX
+    LDA prng+0
+    ROR A
+    CLC
+    ADC prng+0
+    TXA
+    ADC prng+1
+    ROR A
+    LSR A
+    LSR A
+    LSR A
+    LSR A
 
-
+@nospawn:
     LDA controller     ; right button
     AND #BUTTON_RIGHT
     BEQ @noright
