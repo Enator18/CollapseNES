@@ -18,6 +18,7 @@
     ppu_ctrl:      .res 1     ; A CPU side mirror of the PPUCTRL register
     vram_index:    .res 1     ; Current index of the VRAM buffer
     frame_counter: .res 1     ; General purpose frame counter
+    frame_ready:   .res 1     ; Used to indicate to the NMI handler that frame is ready to be drawn
     scroll:        .res 1     ; Y pixel position of screen scroll
     oam_index:     .res 1     ; Current index of the OAM buffer
     controller:    .res 1     ; Controller input
@@ -35,10 +36,10 @@
     jumping:       .res 1     ; Whether the jump button was held last frame
     p_anim_frame:  .res 1     ; The current frame of the player's animation
     spawn_timer:   .res 1     ; The number of frames until the next block spawns
-    next_col:      .res 1     ; The next column to spawn a block
     block_col:     .res 3     ; The column of the falling blocks
     block_x_pos:   .res 3     ; The x coordinate of the falling blocks
     block_y_pos:   .res 3     ; The y coordinate of the falling blocks
+    columns:       .res 12    ; The y coord of the top of each block column
 
 
 .segment "RAM"                ; The rest of internal RAM after ZP, the OAM buffer, and the VRAM buffer

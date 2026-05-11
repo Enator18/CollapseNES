@@ -1,46 +1,44 @@
 nmiwait:
     LDX frame_counter
-    JSR update_prng
 :
+    JSR update_prng
     CPX frame_counter
     BEQ :-
     RTS
 
 
-writevram:          ; adds a write to the vram buffer (A: VRAM address MSB, X: VRAM address LSB, Y: value)
-    STY R0
-    LDY vram_index
-    STA VRAMBUF,Y
-    INY
-    STA VRAMBUF,Y
-    TAX
-    INY
+writevram:          ; adds a write to the vram buffer (A: VRAM address MSB, Y: VRAM address LSB, R0: value)
+    LDX vram_index
+    STA VRAMBUF,X
+    INX
+    TYA
+    STA VRAMBUF,X
+    INX
     LDA R0
-    STA VRAMBUF,Y
-    INY
-    STY vram_index
+    STA VRAMBUF,X
+    INX
+    STX vram_index
     LDA #$FF
-    STA VRAMBUF,Y
+    STA VRAMBUF,X
     RTS
 
 
-oamsprite:          ; adds a sprite to OAM (R0: Tile Index, R1: X Position, R2: Y Position, R3: Attribute Byte)
-    LDY R2
+oamsprite:          ; adds a sprite to OAM (R0: Tile Index, R1: Attribute Byte, R2: X Position, Y: Y Position)
     DEY             ; correct for Y offset
     TYA
-    LDX oam_index
-    STA OAMBUF,X
-    INX
+    LDY oam_index
+    STA OAMBUF,Y
+    INY
     LDA R0
-    STA OAMBUF,X
-    INX
-    LDA R3
-    STA OAMBUF,X
-    INX
+    STA OAMBUF,Y
+    INY
     LDA R1
-    STA OAMBUF,X
-    INX
-    STX oam_index
+    STA OAMBUF,Y
+    INY
+    LDA R2
+    STA OAMBUF,Y
+    INY
+    STY oam_index
     RTS
 
 

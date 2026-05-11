@@ -115,6 +115,10 @@ initppu:
     STA PPUMASK
 
 initgame:
+    LDA #$01        ; init rng
+    STA prng+0
+    STA frame_ready
+
     LDA #$7C        ; init player position
     STA x_pos+1
     LDA #$C0
@@ -144,8 +148,10 @@ initgame:
 @initspawn:
     LDA #$18
     STA spawn_timer
-    LDA #$FF
-    STA next_col
-    STA block_col+0
-    STA block_col+1
-    STA block_col+2
+@initcolumns:
+    LDX #$0C
+    LDA #$C0
+:
+    DEX
+    STA columns, X
+    BNE :- 

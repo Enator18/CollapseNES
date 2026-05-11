@@ -1,11 +1,13 @@
 NMI:
     PHP
     PHA
+    INC frame_counter
+    LDA frame_ready
+    BEQ lagframe
     TXA
     PHA
     TYA
     PHA
-    INC frame_counter
     LDA #$02           ; OAM DMA
     STA OAMDMA
 
@@ -46,6 +48,7 @@ vrambuffer:
 vrambufferdone:
     LDA #$00
     STA vram_index
+    STA frame_ready
 
 setscroll:
     LDA ppu_ctrl
@@ -54,10 +57,12 @@ setscroll:
     STA PPUSCROLL
     LDA scroll
     STA PPUSCROLL
+
     PLA
     TAY
     PLA
     TAX
+lagframe:
     PLA
     PLP
     RTI

@@ -1,39 +1,99 @@
 mainloop:              ; the main game tick loop
     JSR nmiwait        ; wait until next frame
 
+    JSR oamclear
+
     LDA #$01           ; read controller
     STA JOY1
     STA controller     ; initialize the controller variable to $01 so that once the 8 button values are shifted in, 1 will be placed into the carry
-    LSR a
+    LSR A
     STA JOY1
 :
     LDA JOY1
-    LSR a              ; move the button value from bit 0 of A to the carry flag
+    LSR A              ; move the button value from bit 0 of A to the carry flag
     ROL controller     ; move the button value from the carry flag to bit 0 of the controller variable, shifting the other buttons as a result
     BCC :-             ; the carry flag will be 1 if the controller variable has been shifted left 8 times, indicating that all 8 buttons have been read
 
-updatespawn:
-    DEC spawn_timer
-    BNE @nospawn
-@getcol:
-    LDA #$18
-    STA spawn_timer
-    LDA prng+1
+updateblocks:
+    DEC spawn_timer    ; update spawn timer
+
+    LDX #$02           ; move existing blocks
+@moveloop:
+    LDA block_col, X
+    BEQ @maybespawn    ; maybe spawn a block if this slot is empty
+    LDA block_y_pos, X
+    CLC
+    ADC #BLOCKSPEED
+    STA block_y_pos, X
+    JMP @checkcollide
+@maybespawn:           ; maybe spawn a new block
+    LDA spawn_timer    ; check the spawn timer
+    BNE @loopend       ; spawn if timer is equal to 0
+    LDA prng+1         ; choose a random column to spawn at
     LSR A
-    TAX
+    TAY
     LDA prng+0
     ROR A
     CLC
     ADC prng+0
-    TXA
+    TYA
     ADC prng+1
     ROR A
+    CLC
+    ADC #$20
+    AND #$F0
+    STA block_x_pos, X
     LSR A
     LSR A
     LSR A
     LSR A
+    STA block_col, X
 
-@nospawn:
+    LDA #$18           ; reset spawn timer
+    STA spawn_timer
+    
+    LDA #$01
+    STA block_y_pos, X ; start the block at the top of the screen
+@checkcollide:
+    LDY block_col, X
+    CMP columns-2, Y   ; the column values go from 2-13 to better line up with positions
+    BCC @nocollide
+    AND #$F0
+    ORA block_col, X
+    TAY
+    LDA #$01
+    STA colmap, Y
+    LDY block_col, X
+    LDA columns-2, Y
+    SBC #$10
+    STA columns-2, Y
+    LDA #$00
+    STA block_col, X
+    BEQ @loopend
+@nocollide:
+    LDA #$02
+    STA R0
+    LDA #%00000001
+    STA R1
+    LDA block_y_pos, X
+    TAY
+    LDA block_x_pos, X
+    STA R2
+    JSR oamsprite
+    CLC
+    ADC #$08
+    STA R2
+    LDA #$04
+    STA R0
+    LDA block_y_pos, X
+    TAY
+    JSR oamsprite
+@loopend:
+    DEX
+    BPL @moveloop
+
+
+readcontroller:
     LDA controller     ; right button
     AND #BUTTON_RIGHT
     BEQ @noright
@@ -209,16 +269,17 @@ apply_y_vel:
 :
 
 drawplayer:
-    JSR oamclear       ; draw sprites
     LDA #$01
     STA R0
-    LDA x_pos+1
-    STA R1
-    LDA y_pos+1
-    STA R2
     LDA #%00000000
     ORA player_dir
-    STA R3
+    STA R1
+    LDA x_pos+1
+    STA R2
+    LDY y_pos+1
     JSR oamsprite
+
+    LDA #$01
+    STA frame_ready
 
     JMP mainloop
