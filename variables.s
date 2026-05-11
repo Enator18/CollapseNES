@@ -44,3 +44,5 @@
 
 .segment "RAM"                ; The rest of internal RAM after ZP, the OAM buffer, and the VRAM buffer
     colmap:        .res 240   ; A map that stores which tiles are solid
+    padding:       .res 16    ; Will be replaced with things once there is stuff to put here
+    attr_buf:      .res 64    ; A mirror of the nametable A attribute table for single 16x16 updates

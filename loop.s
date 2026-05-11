@@ -56,22 +56,35 @@ updateblocks:
     STA block_y_pos, X ; start the block at the top of the screen
 @checkcollide:
     LDY block_col, X
+    STY R0
     CMP columns-2, Y   ; the column values go from 2-13 to better line up with positions
     BCC @nocollide
-    AND #$F0
-    ORA block_col, X
+    AND #$F0           ; set collision
+    ORA R0
     TAY
     LDA #$01
     STA colmap, Y
-    LDY block_col, X
+    LDY R0             ; increase column height
     LDA columns-2, Y
+    STA R1
     SBC #$10
     STA columns-2, Y
     LDA #$00
     STA block_col, X
+
+    LDA R0             ; add vram updates
+    ASL
+    ROL
+    ROL
+    ORA #$20
+    LDY vram_index
+    STA VRAMBUF, Y
+    
+    INY
+
     BEQ @loopend
 @nocollide:
-    LDA #$02
+    LDA #$02          ; draw falling block sprites
     STA R0
     LDA #%00000001
     STA R1

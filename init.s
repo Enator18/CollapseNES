@@ -27,7 +27,7 @@ clearmem:
     STA $0500, x
     STA $0600, x
     STA $0700, x
-    LDA #$fe
+    LDA #$FF
     STA $0200, x    ; Set aside space in RAM for sprite data
     INX 
     BNE clearmem

@@ -19,6 +19,11 @@ JOY1      = $4016   ; Controller 1 Read
 JOY2      = $4017   ; Controller 2 Read
                     ; SD-- ---- -> Frame counter: 5-frame sequence, disable frame interrupt (write)
 
+ATTR_0 = %00000000
+ATTR_1 = %01010101
+ATTR_2 = %10101010
+ATTR_3 = %11111111
+
 BUTTON_A      = 1 << 7
 BUTTON_B      = 1 << 6
 BUTTON_SELECT = 1 << 5
