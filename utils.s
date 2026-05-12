@@ -1,8 +1,10 @@
 .proc bg_collision  ; collides the player with the background tiles
-left    := x_pos+1
-right   := R0
-top     := y_pos+1
-bottom  := R1
+left       := x_pos+1
+leftshift  := R0
+right      := R1
+rightshift := R2
+top        := y_pos+1
+bottom     := R3
     LDA #$00
     STA x_eject
     STA y_eject
@@ -17,17 +19,17 @@ bottom  := R1
     ADC #PLAYERHEIGHT-1
     STA bottom      ; bottom edge
 
-
+@topleft:
     LDA left        ; top left corner
     LSR A
     LSR A
     LSR A
     LSR A
-    STA R2          ; The lower 4 bits store the x position of the tile in the tile map
+    STA leftshift   ; The lower 4 bits store the x position of the tile in the tile map
     LDA top
     AND #$f0        ; The upper 4 bits store the y position of the tile in the tile map
     CLC
-    ADC R2
+    ADC leftshift
     TAX             ; X is now the index of the tile contianing the player's top-left corner
     LDA colmap,X
     BEQ :+          ; if the tile has collision, collide
@@ -50,11 +52,11 @@ bottom  := R1
     LSR A
     LSR A
     LSR A
-    STA R2
+    STA rightshift
     LDA top
     AND #$f0
     CLC
-    ADC R2
+    ADC rightshift
     TAX
     LDA colmap,X
     BEQ :+
@@ -72,16 +74,10 @@ bottom  := R1
 :
 
 @bot_left:
-    LDA left        ; bottom left corner
-    LSR A
-    LSR A
-    LSR A
-    LSR A
-    STA R2
-    LDA bottom
+    LDA bottom      ; bottom left corner
     AND #$f0
     CLC
-    ADC R2
+    ADC leftshift
     TAX
     LDA colmap,X
     BEQ :+
@@ -100,16 +96,10 @@ bottom  := R1
 :
 
 @bot_right:
-    LDA right       ; bottom right corner
-    LSR A
-    LSR A
-    LSR A
-    LSR A
-    STA R2
-    LDA bottom
+    LDA bottom      ; bottom right corner
     AND #$f0
     CLC
-    ADC R2
+    ADC rightshift
     TAX
     LDA colmap,X
     BEQ :+
@@ -142,4 +132,58 @@ update_prng:
     EOR prng+1
     STA prng+1
     RTS
+
+
+placeblock:
+    AND #$F0           ; set collision
+    ORA R0
+    TAY
+    LDA #$01
+    STA colmap, Y
+    LDY R0             ; increase column height
+    LDA columns-2, Y
+    STA R1
+    SBC #$10
+    STA columns-2, Y
+    LDA #$00
+    STA block_col, X
+
+    LDA R1             ; add vram updates
+    ASL
+    ROL
+    ROL
+    ORA #$60
+    LDY vram_index
+    STA VRAMBUF+0, Y     ; address MSB
+    STA VRAMBUF+5, Y
+
+    LDA R1
+    ASL
+    ORA R0
+    ASL
+    STA VRAMBUF+1, Y   ; top address LSB
+    ORA #$20
+    STA VRAMBUF+6, Y   ; bottom address LSB
+
+    LDA #$02
+    STA VRAMBUF+2, Y   ; run length
+    STA VRAMBUF+7, Y
+
+    STA VRAMBUF+3, Y   ; top left corner tile
+    LDA #$03
+    STA VRAMBUF+8, Y   ; bottom left corner tile
+
+    LDA #$04
+    STA VRAMBUF+4, Y   ; top right corner tile
+    LDA #$05
+    STA VRAMBUF+9, Y   ; bottom right corner tile
+    
+    LDA #$FF
+    STA VRAMBUF+10, Y  ; vram buffer terminator
+    
+    TYA
+    CLC
+    ADC #$0A
+    STA vram_index
+    JMP blockloopend
     

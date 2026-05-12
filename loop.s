@@ -18,7 +18,7 @@ updateblocks:
     DEC spawn_timer    ; update spawn timer
 
     LDX #$02           ; move existing blocks
-@moveloop:
+blockupdateloop:
     LDA block_col, X
     BEQ @maybespawn    ; maybe spawn a block if this slot is empty
     LDA block_y_pos, X
@@ -28,7 +28,7 @@ updateblocks:
     JMP @checkcollide
 @maybespawn:           ; maybe spawn a new block
     LDA spawn_timer    ; check the spawn timer
-    BNE @loopend       ; spawn if timer is equal to 0
+    BNE blockloopend   ; spawn if timer is equal to 0
     LDA prng+1         ; choose a random column to spawn at
     LSR A
     TAY
@@ -58,32 +58,9 @@ updateblocks:
     LDY block_col, X
     STY R0
     CMP columns-2, Y   ; the column values go from 2-13 to better line up with positions
-    BCC @nocollide
-    AND #$F0           ; set collision
-    ORA R0
-    TAY
-    LDA #$01
-    STA colmap, Y
-    LDY R0             ; increase column height
-    LDA columns-2, Y
-    STA R1
-    SBC #$10
-    STA columns-2, Y
-    LDA #$00
-    STA block_col, X
-
-    LDA R0             ; add vram updates
-    ASL
-    ROL
-    ROL
-    ORA #$20
-    LDY vram_index
-    STA VRAMBUF, Y
-    
-    INY
-
-    BEQ @loopend
-@nocollide:
+    BCC :+
+    JMP placeblock
+:
     LDA #$02          ; draw falling block sprites
     STA R0
     LDA #%00000001
@@ -101,12 +78,12 @@ updateblocks:
     LDA block_y_pos, X
     TAY
     JSR oamsprite
-@loopend:
+blockloopend:
     DEX
-    BPL @moveloop
+    BPL blockupdateloop
 
 
-readcontroller:
+playermovement:
     LDA controller     ; right button
     AND #BUTTON_RIGHT
     BEQ @noright
