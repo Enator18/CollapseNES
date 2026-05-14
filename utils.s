@@ -135,6 +135,7 @@ update_prng:
 
 
 placeblock:
+    STY R0
     AND #$F0           ; set collision
     ORA R0
     TAY
@@ -177,13 +178,50 @@ placeblock:
     STA VRAMBUF+4, Y   ; top right corner tile
     LDA #$05
     STA VRAMBUF+9, Y   ; bottom right corner tile
+
+    LDA #$23            ; add palette updates
+    STA VRAMBUF+10, Y   ; address MSB
+
+    STX R2
+    LDX #%11001100
+    LDA R0
+    AND #$01
+    BEQ :+
+    LDX #%00110011
+:
+    STX R3
+
+    LDX #%11110000
+    LDA R1
+    AND #$10
+    BEQ :+
+    LDX #%00001111
+:
+    TXA
+    ORA R3
+    STA R3
+
+    LDA R1
+    LSR
+    AND #$F0
+    ORA R0
+    LSR
+    TAX
+    ORA #$C0
+    STA VRAMBUF+11, Y  ; address LSB
+
+    LDA attr_buf, X
+    AND R3
+    STA attr_buf, X
+    LDX R2
+    STA VRAMBUF+12, Y  ; value
     
     LDA #$FF
-    STA VRAMBUF+10, Y  ; vram buffer terminator
+    STA VRAMBUF+13, Y  ; vram buffer terminator
     
     TYA
     CLC
-    ADC #$0A
+    ADC #$0D
     STA vram_index
     JMP blockloopend
     

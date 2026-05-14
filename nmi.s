@@ -20,7 +20,6 @@ vrambuffer:
     CMP #$40
     BCS @sequential
     STA PPUADDR
-    INX
     LDA VRAMBUF,X
     STA PPUADDR
     INX

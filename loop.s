@@ -56,7 +56,6 @@ blockupdateloop:
     STA block_y_pos, X ; start the block at the top of the screen
 @checkcollide:
     LDY block_col, X
-    STY R0
     CMP columns-2, Y   ; the column values go from 2-13 to better line up with positions
     BCC :+
     JMP placeblock
