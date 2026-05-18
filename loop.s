@@ -210,52 +210,7 @@ releasejump:
     STA jumping
 
 applyvelocity:
-    CLC                ; apply X velocity
-    LDA x_pos+0
-    ADC x_vel+0
-    STA x_pos+0
-    LDA x_pos+1
-    ADC x_vel+1
-    STA x_pos+1
-    
-player_collision:
-    JSR bg_collision   ; X collision
-    LDA collision
-    BEQ apply_y_vel
-    LDA #$00
-    STA x_vel+1
-    STA x_vel+0
-    LDX player_dir
-    BNE @backwards
-    LDA #$C0
-@backwards:
-    STA x_pos+0
-    LDA x_pos+1
-    SEC
-    SBC x_eject
-    STA x_pos+1
-apply_y_vel:
-    CLC                ; apply Y velocity
-    LDA y_pos+0
-    ADC y_vel+0
-    STA y_pos+0
-    LDA y_pos+1
-    ADC y_vel+1
-    STA y_pos+1
-
-    JSR bg_collision   ; Y collision
-    LDA collision
-    BEQ :+
-    LDA #$00
-    STA y_vel+1
-    STA y_vel+0
-    LDA #$C0
-    STA y_pos+0
-    LDA y_pos+1
-    SEC
-    SBC y_eject
-    STA y_pos+1
-:
+    JSR move_and_collide
 
 drawplayer:
     LDA #$01

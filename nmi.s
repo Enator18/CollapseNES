@@ -1,5 +1,4 @@
 NMI:
-    PHP
     PHA
     INC frame_counter
     LDA frame_ready
@@ -63,5 +62,4 @@ setscroll:
     TAX
 lagframe:
     PLA
-    PLP
     RTI

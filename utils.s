@@ -1,121 +1,85 @@
-.proc bg_collision  ; collides the player with the background tiles
-left       := x_pos+1
-leftshift  := R0
-right      := R1
-rightshift := R2
-top        := y_pos+1
-bottom     := R3
+.proc move_and_collide
     LDA #$00
-    STA x_eject
-    STA y_eject
-    STA collision
     STA on_ground
-    LDA left
-    CLC
-    ADC #PLAYERWIDTH-1
-    STA right       ; right edge
-    LDA top
-    CLC
-    ADC #PLAYERHEIGHT-1
-    STA bottom      ; bottom edge
+    CLC                ; apply X velocity
+    LDA x_pos+0
+    ADC x_vel+0
+    STA x_pos+0
+    LDA x_pos+1
+    ADC x_vel+1
+    STA x_pos+1
+    
+    CMP #$20
+    BCC @xhit
+    CMP #$D9
+    BCS @xhit
 
-@topleft:
-    LDA left        ; top left corner
-    LSR A
-    LSR A
-    LSR A
-    LSR A
-    STA leftshift   ; The lower 4 bits store the x position of the tile in the tile map
-    LDA top
-    AND #$f0        ; The upper 4 bits store the y position of the tile in the tile map
+    TAY
+    LDX x_vel+1
+    BMI :+
     CLC
-    ADC leftshift
-    TAX             ; X is now the index of the tile contianing the player's top-left corner
-    LDA colmap,X
-    BEQ :+          ; if the tile has collision, collide
-    INC collision
-    LDA left
-    AND #$0f
-    SEC
-    SBC #$10
-    STA x_eject
-    LDA top
-    AND #$0f
-    SEC
-    SBC #$10
-    STA y_eject
+    ADC #$07
 :
-
-@top_right:
-    LDA right       ; top right corner
     LSR A
     LSR A
     LSR A
     LSR A
-    STA rightshift
-    LDA top
-    AND #$f0
-    CLC
-    ADC rightshift
     TAX
-    LDA colmap,X
-    BEQ :+
-    INC collision
-    LDA right
-    AND #$0f
+    LDA columns-2, X
+    CMP y_pos+1
+    BCS @noxhit
+    TYA
+@xhit:
+    AND #$F8
+    LDY #$C0
+    LDX x_vel+1
+    BPL :+
+    LDY #$00
+    AND #$F0
     CLC
-    ADC #$01
-    STA x_eject
-    LDA top
-    AND #$0f
-    SEC
-    SBC #$10
-    STA y_eject
+    ADC #$10
 :
+    STY x_pos+0
+    STA x_pos+1
+    LDA #$00
+    STA x_vel+0
+    STA x_vel+1
+@noxhit:
+    CLC                ; apply Y velocity
+    LDA y_pos+0
+    ADC y_vel+0
+    STA y_pos+0
+    LDA y_pos+1
+    ADC y_vel+1
+    STA y_pos+1
 
-@bot_left:
-    LDA bottom      ; bottom left corner
-    AND #$f0
-    CLC
-    ADC leftshift
+    LDA x_pos+1
+    LSR A
+    LSR A
+    LSR A
+    LSR A
     TAX
-    LDA colmap,X
-    BEQ :+
-    INC collision
-    INC on_ground
-    LDA left
-    AND #$0f
-    SEC
-    SBC #$10
-    STA x_eject
-    LDA bottom
-    AND #$0f
-    CLC
-    ADC #$01
-    STA y_eject
-:
-
-@bot_right:
-    LDA bottom      ; bottom right corner
-    AND #$f0
-    CLC
-    ADC rightshift
-    TAX
-    LDA colmap,X
-    BEQ :+
-    INC collision
-    INC on_ground
-    LDA right
-    AND #$0f
-    CLC
-    ADC #$01
-    STA x_eject
-    LDA bottom
-    AND #$0f
-    CLC
-    ADC #$01
-    STA y_eject
-:
+    LDA columns-2, X
+    CMP y_pos+1
+    BCC @yhit
+    LDA x_pos+1
+    AND #$0F
+    CMP #$09
+    BCC @noyhit
+    INX
+    LDA columns-2, X
+    CMP y_pos+1
+    BCS @noyhit
+@yhit:
+    STA y_pos+1
+    LDA #$C0
+    STA y_pos+0
+    LDA #$00
+    STA y_vel+0
+    STA y_vel+1
+    LDA #$01
+    STA on_ground
+@noyhit:
     RTS
 .endproc
 
@@ -135,14 +99,7 @@ update_prng:
 
 
 placeblock:
-    STY R0
-    AND #$F0           ; set collision
-    ORA R0
-    TAY
-    LDA #$01
-    STA colmap, Y
-    LDY R0             ; increase column height
-    LDA columns-2, Y
+    LDA columns-2, Y   ; increase column height
     STA R1
     SBC #$10
     STA columns-2, Y
@@ -154,6 +111,7 @@ placeblock:
     ROL
     ROL
     ORA #$60
+    STY R0
     LDY vram_index
     STA VRAMBUF+0, Y     ; address MSB
     STA VRAMBUF+5, Y

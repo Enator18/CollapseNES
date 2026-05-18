@@ -29,9 +29,6 @@
     x_vel:         .res 2     ; X velocity of the player (LSB: subpixel velocity, MSB: pixel velocity)
     y_vel:         .res 2     ; Y velocity of the player (LSB: subpixel velocity, MSB: pixel velocity)
 
-    x_eject:       .res 1     ; The amount to push the player out of a block on the x axis after they collide
-    y_eject:       .res 1     ; The amount to push the player out of a block on the y axis after they collide
-    collision:     .res 1     ; Whether a collision has occured
     on_ground:     .res 1     ; Whether the player is on the ground
     jumping:       .res 1     ; Whether the jump button was held last frame
     p_anim_frame:  .res 1     ; The current frame of the player's animation
@@ -43,6 +40,4 @@
 
 
 .segment "RAM"                ; The rest of internal RAM after ZP, the OAM buffer, and the VRAM buffer
-    colmap:        .res 240   ; A map that stores which tiles are solid
-    padding:       .res 16    ; Will be replaced with things once there is stuff to put here
     attr_buf:      .res 64    ; A mirror of the nametable A attribute table for single 16x16 updates

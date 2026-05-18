@@ -123,27 +123,6 @@ initgame:
     STA x_pos+1
     LDA #$C0
     STA y_pos+1
-
-    LDX #$00
-@wallloop:
-    LDA #$01		; set accumluator to 1 for solid
-    STA colmap, X
-    STA colmap+1, X
-    STA colmap+14, X
-    STA colmap+15, X
-    TXA
-    CLC
-    ADC #$10
-    TAX
-    CPX #$D0
-    BNE @wallloop
-
-    LDA #$01
-@floorloop:
-	STA colmap, X
-	INX
-	CPX #$F0
-	BNE @floorloop
     
 @initspawn:
     LDA #$18
