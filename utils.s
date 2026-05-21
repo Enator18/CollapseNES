@@ -1,56 +1,56 @@
 move_and_collide:
     LDA #$00
-    STA on_ground
-    CLC                ; apply X velocity
-    LDA x_pos+0
+    STA on_ground      ; 0 on_ground
+    CLC                ; apply X velocity (16 bit addition)
+    LDA x_pos+0		   ; lower bytes
     ADC x_vel+0
     STA x_pos+0
-    LDA x_pos+1
+    LDA x_pos+1		   ; upper bytes
     ADC x_vel+1
     STA x_pos+1
 
-    TAY
+    TAY		           ; write x position to y register
+    LSR A			   ; divide it by 16
     LSR A
     LSR A
     LSR A
-    LSR A
-    TAX
+    TAX				   ; now the horizontal tile is in the x register
 
-    TYA
+    TYA				   ; these next two lines put the right 4 bits of the x pos in the accumulator
     AND #$0F
-    CMP #$09
+    CMP #$09		   ; if that's less than 9, jump to noxhit because our left half is on the left side of the tile we're on, so we didn't hit anything
     BCC @noxhit
-
-    BIT x_vel+1
-    BMI :+
-    INX
+					   ; we might've hit something; let's check
+    BIT x_vel+1		   ; here we set the minus flag based on the x velocity
+    BMI :+			   ; if we're moving left skip the next thing
+    INX				   ; otherwise, increment x, because we're moving right, so we look at one column to the right
 :
-    CPX #$02
+    CPX #$02		   ; if our tile is less than 2, we're colliding with the left wall, jump to x hit
     BCC @xhit
-    CPX #$0E
+    CPX #$0E		   ; if our tile is greater than or equal to 14, we're collding with the right wall, jump to x hit
     BCS @xhit
 
-    LDA columns-2, X
-    CMP y_pos+1
+    LDA columns-2, X   ; our tile is between 2 and 13 in world space, but we store 0 to 11, so subtract 2, and get the column value there
+    CMP y_pos+1		   ; check if that height is >= our y pos (up is down so if it is, there's no hit, otherwise proceed to hit)
     BCS @noxhit
 @xhit:
-    TYA
+    TYA				   ; put the x pos in the accumulator and round to the nearest half-tile
     AND #$F8
-    LDY #$C0
-    BIT x_vel+1
-    BPL :+
-    LDY #$00
-    AND #$F0
+    LDY #$C0		   ; set the fractional position to .75, the biggest multiple of .25 you can have before moving a full position
+    BIT x_vel+1		   ; check our direction
+    BPL :+			   ; if we were going right, our job is done, so skip
+    LDY #$00		   ; otherwise that stuff we did was useless so start over. Start by setting fractional pos to 0 so that we're all the way on the left of the block
+    AND #$F0		   ; snap them to the left of their tile, then move them one tile right, so they're at the far left of the space to the right
     CLC
     ADC #$10
 :
-    STY x_pos+0
-    STA x_pos+1
-    LDA #$00
+    STY x_pos+0		   ; update the fractional position
+    STA x_pos+1		   ; update the position
+    LDA #$00		   ; 0 the velocity because we collided
     STA x_vel+0
     STA x_vel+1
 @noxhit:
-    CLC                ; apply Y velocity
+    CLC                ; apply Y velocity, another 16 bit add
     LDA y_pos+0
     ADC y_vel+0
     STA y_pos+0
@@ -58,31 +58,31 @@ move_and_collide:
     ADC y_vel+1
     STA y_pos+1
 
-    LDA x_pos+1
+    LDA x_pos+1		   ; recalculate x pos because we might've moved
     LSR A
     LSR A
     LSR A
     LSR A
     TAX
-    LDA columns-2, X
-    CMP y_pos+1
+    LDA columns-2, X   ; grab our column's height value
+    CMP y_pos+1		   ; check if we're hitting a tile and handle it if we are
     BCC @yhit
-    LDA x_pos+1
+    LDA x_pos+1		   ; look at the right 4 bits of our world pos and see if we're on the left half of a tile
     AND #$0F
     CMP #$09
-    BCC @noyhit
-    INX
-    LDA columns-2, X
+    BCC @noyhit		   ; if we are, then we didn't hit anything
+    INX				   ; increment the column index to look to the column to the right that we're also touching
+    LDA columns-2, X   ; if we're not hitting it, we can skip the hit check
     CMP y_pos+1
     BCS @noyhit
 @yhit:
-    STA y_pos+1
-    LDA #$C0
+    STA y_pos+1		   ; the top of the column is already where they should be standing so teleport there
+    LDA #$C0		   ; put their fractional position as low as possible
     STA y_pos+0
-    LDA #$00
+    LDA #$00		   ; reset the y velocity
     STA y_vel+0
     STA y_vel+1
-    LDA #$01
+    LDA #$01		   ; store that we hit the ground
     STA on_ground
 @noyhit:
     RTS
