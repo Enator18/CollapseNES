@@ -53,7 +53,7 @@ move_and_collide:
 	CMP y_pos+1
 	BCC @xblockloop	   ; if we're below it, keep checking
 @xhit:
-    TYA				   ; put the x pos in the accumulator and round to the nearest half-tile
+    LDA x_pos+1        ; put the x pos in the accumulator and round to the nearest half-tile
     AND #$F8
     LDY #$C0		   ; set the fractional position to .75, the biggest multiple of .25 you can have before moving a full position
     BIT x_vel+1		   ; check our direction
