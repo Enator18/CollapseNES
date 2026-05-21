@@ -1,4 +1,4 @@
-.proc move_and_collide
+move_and_collide:
     LDA #$00
     STA on_ground
     CLC                ; apply X velocity
@@ -8,31 +8,36 @@
     LDA x_pos+1
     ADC x_vel+1
     STA x_pos+1
-    
-    CMP #$20
-    BCC @xhit
-    CMP #$D9
-    BCS @xhit
 
     TAY
-    LDX x_vel+1
-    BMI :+
-    CLC
-    ADC #$07
-:
     LSR A
     LSR A
     LSR A
     LSR A
     TAX
+
+    TYA
+    AND #$0F
+    CMP #$09
+    BCC @noxhit
+
+    BIT x_vel+1
+    BMI :+
+    INX
+:
+    CPX #$02
+    BCC @xhit
+    CPX #$0E
+    BCS @xhit
+
     LDA columns-2, X
     CMP y_pos+1
     BCS @noxhit
-    TYA
 @xhit:
+    TYA
     AND #$F8
     LDY #$C0
-    LDX x_vel+1
+    BIT x_vel+1
     BPL :+
     LDY #$00
     AND #$F0
@@ -81,7 +86,6 @@
     STA on_ground
 @noyhit:
     RTS
-.endproc
 
 update_prng:
     LDA prng+1

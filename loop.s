@@ -14,74 +14,6 @@ mainloop:              ; the main game tick loop
     ROL controller     ; move the button value from the carry flag to bit 0 of the controller variable, shifting the other buttons as a result
     BCC :-             ; the carry flag will be 1 if the controller variable has been shifted left 8 times, indicating that all 8 buttons have been read
 
-updateblocks:
-    DEC spawn_timer    ; update spawn timer
-
-    LDX #$02           ; move existing blocks
-blockupdateloop:
-    LDA block_col, X
-    BEQ @maybespawn    ; maybe spawn a block if this slot is empty
-    LDA block_y_pos, X
-    CLC
-    ADC #BLOCKSPEED
-    STA block_y_pos, X
-    JMP @checkcollide
-@maybespawn:           ; maybe spawn a new block
-    LDA spawn_timer    ; check the spawn timer
-    BNE blockloopend   ; spawn if timer is equal to 0
-    LDA prng+1         ; choose a random column to spawn at
-    LSR A
-    TAY
-    LDA prng+0
-    ROR A
-    CLC
-    ADC prng+0
-    TYA
-    ADC prng+1
-    ROR A
-    CLC
-    ADC #$20
-    AND #$F0
-    STA block_x_pos, X
-    LSR A
-    LSR A
-    LSR A
-    LSR A
-    STA block_col, X
-
-    LDA #$18           ; reset spawn timer
-    STA spawn_timer
-    
-    LDA #$01
-    STA block_y_pos, X ; start the block at the top of the screen
-@checkcollide:
-    LDY block_col, X
-    CMP columns-2, Y   ; the column values go from 2-13 to better line up with positions
-    BCC :+
-    JMP placeblock
-:
-    LDA #$02          ; draw falling block sprites
-    STA R0
-    LDA #%00000001
-    STA R1
-    LDA block_y_pos, X
-    TAY
-    LDA block_x_pos, X
-    STA R2
-    JSR oamsprite
-    CLC
-    ADC #$08
-    STA R2
-    LDA #$04
-    STA R0
-    LDA block_y_pos, X
-    TAY
-    JSR oamsprite
-blockloopend:
-    DEX
-    BPL blockupdateloop
-
-
 playermovement:
     LDA controller     ; right button
     AND #BUTTON_RIGHT
@@ -211,6 +143,73 @@ releasejump:
 
 applyvelocity:
     JSR move_and_collide
+
+updateblocks:
+    DEC spawn_timer    ; update spawn timer
+
+    LDX #$02           ; move existing blocks
+blockupdateloop:
+    LDA block_col, X
+    BEQ @maybespawn    ; maybe spawn a block if this slot is empty
+    LDA block_y_pos, X
+    CLC
+    ADC #BLOCKSPEED
+    STA block_y_pos, X
+    JMP @checkcollide
+@maybespawn:           ; maybe spawn a new block
+    LDA spawn_timer    ; check the spawn timer
+    BNE blockloopend   ; spawn if timer is equal to 0
+    LDA prng+1         ; choose a random column to spawn at
+    LSR A
+    TAY
+    LDA prng+0
+    ROR A
+    CLC
+    ADC prng+0
+    TYA
+    ADC prng+1
+    ROR A
+    CLC
+    ADC #$20
+    AND #$F0
+    STA block_x_pos, X
+    LSR A
+    LSR A
+    LSR A
+    LSR A
+    STA block_col, X
+
+    LDA #$18           ; reset spawn timer
+    STA spawn_timer
+    
+    LDA #$01
+    STA block_y_pos, X ; start the block at the top of the screen
+@checkcollide:
+    LDY block_col, X
+    CMP columns-2, Y   ; the column values go from 2-13 to better line up with positions
+    BCC :+
+    JMP placeblock
+:
+    LDA #$02          ; draw falling block sprites
+    STA R0
+    LDA #%00000001
+    STA R1
+    LDA block_y_pos, X
+    TAY
+    LDA block_x_pos, X
+    STA R2
+    JSR oamsprite
+    CLC
+    ADC #$08
+    STA R2
+    LDA #$04
+    STA R0
+    LDA block_y_pos, X
+    TAY
+    JSR oamsprite
+blockloopend:
+    DEX
+    BPL blockupdateloop
 
 drawplayer:
     LDA #$01
