@@ -18,8 +18,8 @@ move_and_collide:
 
     TYA				   ; these next two lines put the right 4 bits of the x pos in the accumulator
     AND #$0F
-    CMP #$09		   ; if that's less than 9, jump to noxhit because our left half is on the left side of the tile we're on, so we didn't hit anything
-    BCC @noxhit
+    CMP #$09		   ; if that's less than 9, jump to checkxblock because our left half is on the left side of the tile we're on, so we didn't hit anything
+    BCC @checkxblock
 					   ; we might've hit something; let's check
     BIT x_vel+1		   ; here we set the minus flag based on the x velocity
     BMI :+			   ; if we're moving left skip the next thing
@@ -32,7 +32,26 @@ move_and_collide:
 
     LDA columns-2, X   ; our tile is between 2 and 13 in world space, but we store 0 to 11, so subtract 2, and get the column value there
     CMP y_pos+1		   ; check if that height is >= our y pos (up is down so if it is, there's no hit, otherwise proceed to hit)
-    BCS @noxhit
+    BCC @xhit		   ; we never need to worry about block collisions if we hit a tile, so skip to xhit
+@checkxblock:
+	LDY #$03		   ; start a 3 thing for loop
+@xblockloop:
+	DEY				   ; countdown
+	BMI @noxhit		   ; exit loop when we're done
+	TXA				   ; compare the yth block to see if we hit it
+	CMP block_col, Y
+	BNE @xblockloop	   ; return to start of loop if we didn't find anything
+					   ; check collisions if we did find something
+	LDA block_y_pos, Y ; read the y pos of the yth block
+	SEC
+	SBC #$10		   ; move up 1 tile
+	CMP y_pos+1
+	BCS @xblockloop	   ; if we're above it, keep checking
+
+	ADC #$1F
+
+	CMP y_pos+1
+	BCC @xblockloop	   ; if we're below it, keep checking
 @xhit:
     TYA				   ; put the x pos in the accumulator and round to the nearest half-tile
     AND #$F8
