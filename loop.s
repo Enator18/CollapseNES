@@ -1,5 +1,9 @@
 mainloop:              ; the main game tick loop
-    JSR nmiwait        ; wait until next frame
+    LDX frame_counter
+:
+    JSR update_prng
+    CPX frame_counter
+    BEQ :-             ; wait until next frame
 
     JSR oamclear
 
@@ -13,6 +17,53 @@ mainloop:              ; the main game tick loop
     LSR A              ; move the button value from bit 0 of A to the carry flag
     ROL controller     ; move the button value from the carry flag to bit 0 of the controller variable, shifting the other buttons as a result
     BCC :-             ; the carry flag will be 1 if the controller variable has been shifted left 8 times, indicating that all 8 buttons have been read
+
+    DEC scroll_timer
+    BNE playermovement ; no scroll this frame
+
+    LDA scroll
+    BNE :+
+    LDA #$F0
+:
+    SBC #$01           ; we already know that carry is set because of the loop above
+    STA scroll
+    AND #$07           ; get fine y scroll value
+    BNE @noclear
+    LDA scroll
+    SBC #$08           ; we already know that carry is set because of the subtraction logic above
+    BCS :+
+    SBC #$0F
+:
+    STA R0
+    ASL A
+    ROL A
+    ROL A
+    ORA #$60
+    LDX vram_index
+    STA VRAMBUF, X
+    INX
+    LDA R0
+    ASL A
+    ASL A
+    STA VRAMBUF, X
+    INX
+    LDA #$20
+    TAY
+    STA VRAMBUF, X
+    INX
+    LDA #$00
+@clearloop:
+    STA VRAMBUF, X
+    INX
+    DEY
+    BNE @clearloop
+    LDA #$FF
+    STA VRAMBUF, X
+    INX
+    STX vram_index
+@noclear:
+    LDA #$12
+    STA scroll_timer
 
 playermovement:
     LDA controller     ; right button
@@ -127,12 +178,12 @@ terminal_velocity:
 
 handlejump:
     LDA on_ground
-    BEQ applyvelocity
+    BEQ move_entities_x
     LDA controller
     AND #BUTTON_A
     BEQ releasejump
     LDA jumping
-    BNE applyvelocity
+    BNE move_entities_x
     STA y_vel+0
     LDA #$01
     STA jumping
@@ -141,8 +192,8 @@ handlejump:
 releasejump:
     STA jumping
 
-applyvelocity:
-    JSR move_and_collide
+move_entities_x:
+    JSR move_and_collide_x
 
 updateblocks:
     DEC spawn_timer    ; update spawn timer
@@ -194,10 +245,9 @@ blockupdateloop:
     STA R0
     LDA #%00000001
     STA R1
-    LDA block_y_pos, X
-    TAY
     LDA block_x_pos, X
     STA R2
+    LDA block_y_pos, X
     JSR oamsprite
     CLC
     ADC #$08
@@ -205,11 +255,13 @@ blockupdateloop:
     LDA #$04
     STA R0
     LDA block_y_pos, X
-    TAY
     JSR oamsprite
 blockloopend:
     DEX
     BPL blockupdateloop
+
+move_entities_y:
+    JSR move_and_collide_y
 
 drawplayer:
     LDA #$01
@@ -219,7 +271,7 @@ drawplayer:
     STA R1
     LDA x_pos+1
     STA R2
-    LDY y_pos+1
+    LDA y_pos+1
     JSR oamsprite
 
     LDA #$01

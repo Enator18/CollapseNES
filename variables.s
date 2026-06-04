@@ -20,6 +20,7 @@
     frame_counter: .res 1     ; General purpose frame counter
     frame_ready:   .res 1     ; Used to indicate to the NMI handler that frame is ready to be drawn
     scroll:        .res 1     ; Y pixel position of screen scroll
+    scroll_timer:  .res 1
     oam_index:     .res 1     ; Current index of the OAM buffer
     controller:    .res 1     ; Controller input
     prng:          .res 2     ; The prng seed/value

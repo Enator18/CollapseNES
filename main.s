@@ -16,4 +16,5 @@
     .word  RESET
     .word  0
 .segment "CHARS"
-    .incbin "collapse.chr"
+    .incbin "tiles.chr"
+    .incbin "sprites.chr"

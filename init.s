@@ -52,8 +52,9 @@ initvram:
 @drawfloor:
     LDA #$02
     LDX #$0C
-    LDY #$04
+    LDY #$03
     STY R0
+    INY
 @drawfloorloop:
     STA PPUDATA
     STY PPUDATA
@@ -70,6 +71,13 @@ initvram:
     LDX #$0C
     DEC R0
     BNE @drawfloorloop
+    
+    LDX #$1C
+    LDA #$00
+:
+    STA PPUDATA
+    DEX
+    BNE :-
 
 @floorattr:
     LDA #$23

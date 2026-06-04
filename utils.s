@@ -1,4 +1,4 @@
-move_and_collide:
+move_and_collide_x:
     LDA #$00
     STA on_ground      ; 0 on_ground
     CLC                ; apply X velocity (16 bit addition)
@@ -69,6 +69,9 @@ move_and_collide:
     STA x_vel+0
     STA x_vel+1
 @noxhit:
+    RTS
+
+move_and_collide_y:
     CLC                ; apply Y velocity, another 16 bit add
     LDA y_pos+0
     ADC y_vel+0
