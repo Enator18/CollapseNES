@@ -84,13 +84,52 @@ initvram:
     STA PPUADDR
     LDX #$F1
     STX PPUADDR
-    INX
     LDA #$00
 :
     STA PPUDATA
     INX
     BNE :-
 
+@lavasurface:
+    LDA #$0A
+    LDY #$0B
+    LDX #$10
+:
+    STA PPUDATA
+    STY PPUDATA
+    DEX
+    BNE :-
+
+@lavatiles:
+    LDA #$05
+    STA R0
+    LDA #$06
+    LDX #$10
+    LDY #$07
+@lavatilesloop:
+    STA PPUDATA
+    STY PPUDATA
+    DEX
+    BNE @lavatilesloop
+    EOR #$0F
+    TAY
+    EOR #$01
+    LDX #$10
+    DEC R0
+    BNE @lavatilesloop
+
+@lavaattr:
+    LDA #$27
+    STA PPUADDR
+    LDA #$C0
+    STA PPUADDR
+    LDA #ATTR_1
+    LDX #$10
+:
+    STA PPUDATA
+    DEX
+    BNE :-
+    
 loadpalette:
     LDA PPUSTATUS   ; read PPU status to reset PPU address
     LDA #$3F        ; Set PPU address to BG palette RAM ($3F00)
@@ -107,12 +146,25 @@ loadpalette:
     BNE :-
 
 initppu:
+    LDA #$D6            ; write sprite 0
+    STA OAMBUF+0
+    LDA #$09
+    STA OAMBUF+1
+    LDA #$20
+    STA OAMBUF+2
+    LDA #$F0
+    STA OAMBUF+3
+
     LDA #$02            ; OAM DMA
     STA OAMDMA
     NOP
 
     LDA #$FF      ; init VRAM buffer
     STA VRAMBUF
+
+    LDA #$00
+    STA PPUSCROLL
+    STA PPUSCROLL
 
     CLI                 ; clear interrups so NMI can be called
     LDA #%10100000
@@ -122,10 +174,13 @@ initppu:
     LDA #%00011110      ; enable background and sprites
     STA PPUMASK
 
+initapu:
+    LDA #$00
+    STA $4011
+
 initgame:
     LDA #$01        ; init rng
     STA prng+0
-    STA frame_ready
 
     LDA #$7C        ; init player position
     STA x_pos+1

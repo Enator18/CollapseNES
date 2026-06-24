@@ -7,17 +7,6 @@ mainloop:              ; the main game tick loop
 
     JSR oamclear
 
-    LDA #$01           ; read controller
-    STA JOY1
-    STA controller     ; initialize the controller variable to $01 so that once the 8 button values are shifted in, 1 will be placed into the carry
-    LSR A
-    STA JOY1
-:
-    LDA JOY1
-    LSR A              ; move the button value from bit 0 of A to the carry flag
-    ROL controller     ; move the button value from the carry flag to bit 0 of the controller variable, shifting the other buttons as a result
-    BCC :-             ; the carry flag will be 1 if the controller variable has been shifted left 8 times, indicating that all 8 buttons have been read
-
     DEC scroll_timer
     BNE playermovement ; no scroll this frame
 
@@ -25,7 +14,8 @@ mainloop:              ; the main game tick loop
     BNE :+
     LDA #$F0
 :
-    SBC #$01           ; we already know that carry is set because of the loop above
+    SEC
+    SBC #$01
     STA scroll
     AND #$07           ; get fine y scroll value
     BNE @noclear

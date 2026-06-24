@@ -5,7 +5,7 @@
 .segment "CODE"
 .include "init.s"
 .include "loop.s"
-.include "nmi.s"
+.include "interrupts.s"
 .include "ppulib.s"
 .include "utils.s"
 .include "data.s"
@@ -14,7 +14,7 @@
 .segment "VECTORS"
     .word  NMI
     .word  RESET
-    .word  0
+    .word  IRQ
 .segment "CHARS"
     .incbin "tiles.chr"
     .incbin "sprites.chr"

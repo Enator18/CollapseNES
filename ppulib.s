@@ -37,7 +37,8 @@ oamsprite:          ; adds a sprite to OAM (R0: Tile Index, R1: Attribute Byte, 
 
 
 oamclear:           ; clears OAM
-    LDX #$00
+    LDX #$04
+    STX oam_index
     LDA #$FF        ; this Y coordinate puts the sprite off screen
 :
     STA OAMBUF,X
@@ -46,5 +47,4 @@ oamclear:           ; clears OAM
     INX
     INX
     BNE :-
-    STX oam_index
     RTS
